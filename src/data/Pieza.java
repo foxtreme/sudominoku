@@ -46,7 +46,6 @@ class Pieza {
             valorA = Math.max(tempA, tempB);
             valorB = Math.min(tempA, tempB);
         }
-        System.out.println("a: "+valorA+" b: "+valorB);
     }
 
     public int getValorA() {
