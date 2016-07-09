@@ -15,7 +15,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * ejemplo de posiciones de piezas
+ * 
+ * 0°   = [m-M]
+ * --------------
+ *        [m]
+ * 90°  = [M]   
+ * ---------------
+ * 180° = [M-m]
+ * ---------------
+ * 270° = [M]
+ *        [m] 
  * @author chrisecc
  */
 public class SudominokuVegas {
@@ -24,6 +34,7 @@ public class SudominokuVegas {
     ArrayList <Pieza> piezas;
     boolean solucion;
     Random prng = new Random(System.currentTimeMillis());
+    
     /**
      * Inicializa las variables
      */
@@ -126,14 +137,14 @@ public class SudominokuVegas {
         }
         if(fila<9){//si fila es un espacio valido en el tablero
             if(tablero[fila][col-1] == 0){//si se puede poner la pieza verticalmente
-                if(ascendente){orientacionesDisponibles.add(270);pieza.ordenPieza("ASC");}
-                else{orientacionesDisponibles.add(90);pieza.ordenPieza("DSC");}
+                if(ascendente){orientacionesDisponibles.add(90);pieza.ordenPieza("ASC");}
+                else{orientacionesDisponibles.add(270);pieza.ordenPieza("DSC");}
             }
         }
-        try{
+        try{//puede que no haya espacio libre, pero si lo hay seleccionar una orientacion aleatoria
             int orientacion = prng.nextInt(orientacionesDisponibles.size());//selecciona una orientacion al azar
             pieza.setOrientacion(orientacionesDisponibles.get(orientacion));
-            System.out.println("Pieza: ["+pieza.getValorA()+","+pieza.getValorB()+"] orientacion: "+pieza.getOrientacion());
+            //System.out.println("Pieza: ["+pieza.getValorA()+","+pieza.getValorB()+"] orientacion: "+pieza.getOrientacion());
         }catch(Exception e){
             System.out.println("No hay espacio para ubicar la pieza");
             pieza = null;
@@ -154,6 +165,52 @@ public class SudominokuVegas {
         return seleccionada;
     }
     
+    /**
+     * Verifica que una pieza en una posicion dada, no irrumpa las reglas para filas
+     * @param pieza pieza a verificar
+     * @param posicion posicion pivote
+     * @return True si cumple con las reglas para filas
+     */
+    public boolean validarFila(Pieza pieza, Point posicion){
+        boolean esValida = true;
+        int orientacion = pieza.getOrientacion();
+        int valorA = pieza.getValorA();
+        int valorB = pieza.getValorB();
+        for(int col=0;(col<9)&&esValida;col++){//si la pieza irrumpe con alguna regla para filas sale del ciclo sin revisar mas
+            esValida = (tablero[posicion.x][col]!=valorA);//revisa toda la fila para valorA
+            if(esValida && ((orientacion==0) || (orientacion==180))){//si esta horizontal revisa tambien la fila para valorB
+                 esValida= (tablero[posicion.x][col]!=valorB);
+            }
+            if(esValida && ((orientacion==90)|| (orientacion==270))){//si esta vertical revisa la fila de abajo para valorB
+                esValida= (tablero[posicion.x+1][col]!=valorB);
+            }
+        }
+        return esValida;
+    }
+    
+    /**
+     * Verifica que una pieza en una posicion dada, no irrumpa las reglas para columnas
+     * @param pieza pieza a verificar
+     * @param posicion posicion pivote
+     * @return True si cumple con las reglas para filas
+     */
+    public boolean validarCol(Pieza pieza, Point posicion){
+        boolean esValida = true;
+        int orientacion = pieza.getOrientacion();
+        int valorA = pieza.getValorA();
+        int valorB = pieza.getValorB();
+        for(int fila=0;(fila<9)&&esValida;fila++){//si la pieza irrumpe con alguna regla para filas sale del ciclo sin revisar mas
+            esValida = (tablero[fila][posicion.y]!=valorA);//revisa toda la columna para valorA
+            if(esValida && ((orientacion==90) || (orientacion==270))){//si esta horizontal revisa tambien la fila para valorB
+                 esValida= (tablero[fila][posicion.y]!=valorB);
+            }
+            if(esValida && ((orientacion==0)|| (orientacion==180))){//si esta vertical revisa la fila de abajo para valorB
+                esValida= (tablero[fila][posicion.y+1]!=valorB);
+            }
+        }
+        return esValida;
+    }
+    
     public static void main(String args[]){
         SudominokuVegas sv = new SudominokuVegas();
         //sv.imprimirPiezas();
@@ -162,7 +219,12 @@ public class SudominokuVegas {
         Point p = sv.buscarPrimeraCasillaLibre();
         System.out.println("Primera casilla libre: "+p.toString());
         Pieza pieza = sv.seleccionarPieza();
-        sv.aleatorizarPieza(pieza, p);
+        pieza = sv.aleatorizarPieza(pieza, p);
+        boolean validarFila = sv.validarFila(pieza, p);
+        boolean validarCol = sv.validarCol(pieza, p);
+        System.out.println("la Pieza: ["+pieza.getValorA()+","+pieza.getValorB()+"] orientacion: "+pieza.getOrientacion());
+        System.out.println("cumple con las filas? -"+validarFila);
+        System.out.println("cumple con las columnas? -"+validarCol);
     }
     
 }
