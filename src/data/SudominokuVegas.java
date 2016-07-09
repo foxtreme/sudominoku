@@ -160,7 +160,7 @@ public class SudominokuVegas {
         Pieza seleccionada= new Pieza();
         int range = piezas.size();
         int indicePieza = prng.nextInt(range);
-        seleccionada = piezas.remove(indicePieza);
+        seleccionada = piezas.get(indicePieza);
         //System.out.println("pieza seleccionada ["+seleccionada.getValorA()+","+seleccionada.getValorB()+"]");
         return seleccionada;
     }
