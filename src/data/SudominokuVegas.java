@@ -9,6 +9,8 @@ import java.awt.Point;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -24,9 +26,8 @@ import java.util.logging.Logger;
  */
 public class SudominokuVegas {
 
-    
-    int[][] tablero;
-    ArrayList<Pieza> piezas;
+    private int[][] tablero;
+    private ArrayList<Pieza> piezas;
     boolean solucion;
     Random prng = new Random(System.currentTimeMillis());
 
@@ -78,11 +79,11 @@ public class SudominokuVegas {
     /**
      * Imprime el tablero
      */
-    public void imprimirTablero() {
+    public void imprimirTablero(int[][] tableroImp) {
         System.out.println("------------");
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
-                System.out.print(tablero[i][j]);
+                System.out.print(tableroImp[i][j]);
                 if ((j + 1) % 3 == 0) {
                     System.out.print("|");
                 }
@@ -96,8 +97,8 @@ public class SudominokuVegas {
     }
 
     /**
-     * Retorna la posicion de la primera casilla libre del tablero, recorrido de
-     * izq a der y de arriba a abajo
+     * Retorna la posicion de la primera casilla libre del tablero,
+     * recorrido de izq a der y de arriba a abajo
      *
      * @return Posicion de la primera casilla libre
      */
@@ -116,8 +117,8 @@ public class SudominokuVegas {
     }
 
     /**
-     * devuelve una pieza aleatorizada(el elemento aleatorio es la orientación)
-     * para verificarla luego
+     * devuelve una pieza aleatorizada(el elemento aleatorio es la
+     * orientación) para verificarla luego
      *
      * @param pieza pieza a acomodar
      * @param posicionLibre casilla libre pivote
@@ -175,8 +176,8 @@ public class SudominokuVegas {
     }
 
     /**
-     * Verifica que una pieza en una posicion dada, no irrumpa las reglas para
-     * filas
+     * Verifica que una pieza en una posicion dada, no irrumpa las reglas
+     * para filas
      *
      * @param pieza pieza a verificar
      * @param posicion posicion pivote
@@ -197,11 +198,12 @@ public class SudominokuVegas {
             }
         }
         return esValida;
+
     }
 
     /**
-     * Verifica que una pieza en una posicion dada, no irrumpa las reglas para
-     * columnas
+     * Verifica que una pieza en una posicion dada, no irrumpa las reglas
+     * para columnas
      *
      * @param pieza pieza a verificar
      * @param posicion posicion pivote
@@ -223,7 +225,7 @@ public class SudominokuVegas {
         }
         return esValida;
     }
-    
+
     /**
      *
      * @param p Casilla libre
@@ -232,9 +234,9 @@ public class SudominokuVegas {
      * orientación
      */
     private Pieza seleccionarPieza2(Point p) {
+        System.out.println("====================================================================================");
         Pieza seleccionada = new Pieza();
-        ArrayList<Pieza> piezasTemporal;
-        piezasTemporal = piezas;
+        ArrayList<Pieza> piezasTemporal = new ArrayList<>(piezas);
         //Se crea para verificar cada una de las piezas disponibles
         //Si la pieza no se puede poner,
         //      se elimina de la lista y se selecciona otra
@@ -247,37 +249,49 @@ public class SudominokuVegas {
             int range = piezasTemporal.size();
             int indicePieza = prng.nextInt(range);
             seleccionada = piezasTemporal.get(indicePieza);
-            System.out.println("Pieza verificada [" + seleccionada.getValorA() + "," + seleccionada.getValorB() + "]");
+            System.out.println("====================================================================================");
+            System.out.println("Pieza a verificar [" + seleccionada.getValorA() + "," + seleccionada.getValorB() + "]");
 
             //Seleccion aleatorizada        
             //Cargar orientaciones Disponibles    
             ArrayList<Integer> orientacionesDisponibles = cargarOrientaciones(p);
             if (orientacionesDisponibles.size() == 0) {
+                System.out.println("ERROR: No se encontraron orientaciones disponibles");
                 casillaDisponible = false;
+                return new Pieza(-1, -1);
             }
+            System.out.println("Se encontraron " + orientacionesDisponibles.size() + " orientaciones disponibles.");
             boolean piezaValida = false;//Si la pieza se puede poner
             //Se prueban todas las orientaciones posibles
             while (orientacionesDisponibles.size() > 0 && !piezaValida) {
-                int orientacion = prng.nextInt(orientacionesDisponibles.size());//selecciona una orientacion al azar
-                seleccionada.setOrientacion(orientacionesDisponibles.get(orientacion));//cambia la orientacion
+                System.out.println("Inicia Validación pieza");
+
+                int orientacion = prng.nextInt(orientacionesDisponibles.size());//selecciona indice de una orientacion al azar
+                seleccionada.setOrientacion(orientacionesDisponibles.get(orientacion));//cambia la orientacion                
+
                 //cambia el orden de los números
                 switch (orientacionesDisponibles.get(orientacion)) {
                     case 0:
                     case 90:
+                        System.out.println("Vertical: Orientación escogida al azar: " + orientacionesDisponibles.get(orientacion));
                         seleccionada.ordenPieza("ASC");
                         break;
                     case 180:
                     case 270:
-                        seleccionada.ordenPieza("DSC");
+                        System.out.println("Horizontal: Orientación escogida al azar: " + orientacionesDisponibles.get(orientacion));
                         seleccionada.ordenPieza("DSC");
                         break;
 
                 }
+                //Antes de validar fila, columna y subMatriz agregar el elemento a un tablero ficticio
                 boolean validarFila = validarFila(seleccionada, p);
+                System.out.println("Validar Fila: " + validarFila);
                 boolean validarCol = validarCol(seleccionada, p);
+                System.out.println("Validar Columna: " + validarCol);
                 boolean validarSubMatriz = validarSubMatriz(seleccionada, p);
+                System.out.println("Validar Submatriz: " + validarSubMatriz);
                 //Ficha valida
-                if (validarCol && validarFila) {
+                if (validarCol && validarFila && validarSubMatriz) {
                     piezaValida = true;
                 } //La ficha es invalida
                 else {
@@ -355,78 +369,192 @@ public class SudominokuVegas {
         }
     }
 
-
     public static void main(String args[]) {
-        /**
-         SudominokuVegas sv = new SudominokuVegas();
-        //sv.imprimirPiezas();
-        sv.cargarTablero("tablero1");
-        sv.imprimirTablero();
-        Point p = sv.buscarPrimeraCasillaLibre();
-        System.out.println("Primera casilla libre: "+p.toString());
-        Pieza pieza = sv.seleccionarPieza();
-        pieza = sv.aleatorizarPieza(pieza, p);
-        boolean validarFila = sv.validarFila(pieza, p);
-        boolean validarCol = sv.validarCol(pieza, p);
-        System.out.println("la Pieza: ["+pieza.getValorA()+","+pieza.getValorB()+"] orientacion: "+pieza.getOrientacion());
-        System.out.println("cumple con las filas? -"+validarFila);
-        System.out.println("cumple con las columnas? -"+validarCol);
-         */
-                      
-        
-        
-        SudominokuVegas sv = new SudominokuVegas();
-        //sv.imprimirPiezas();        
-        sv.cargarTablero("tablero1");        
-        //Iniciar juego, devuelve true si termina con exito
-        for(int i = 0; i<10;i++){
-        boolean exito = iniciarSudominoku(sv);
-            System.out.println("Exito: "+exito);
+        try {
+            int b = 0;
+            int m = 0;
+            for (int j = 0; j < 1; j++) {
+                SudominokuVegas sv = new SudominokuVegas();
+                if (sv.run() == false) {
+                    m++;
+                } else {
+                    b++;
+                }
+            }
+            System.out.println("Ejecuciones Exitosas: "+b);
+            System.out.println("Ejecuciones Fracasadas: "+m);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        
-
     }
 
-    
-    private static boolean iniciarSudominoku(SudominokuVegas sv) {
-        boolean solucion = false;
+    public boolean run() {
+        System.out.println("====================================================================================");
+        //sv.imprimirPiezas();        
+        cargarTablero("tablero1");
+
+        boolean resultado = false;
         boolean termina = false;
-        while (!termina) {            
-            sv.imprimirTablero();
-            Point p = sv.buscarPrimeraCasillaLibre();
+        while (!termina) {
+            System.out.println("Tablero Actual");
+            imprimirTablero(tablero);
+            Point p = buscarPrimeraCasillaLibre();
             System.out.println("Primera casilla libre: " + p.toString());
             //Seleccionar pieza, aleatorizarla y eliminarla de la lista
-            Pieza pieza = sv.seleccionarPieza2(p);
+            Pieza pieza = seleccionarPieza2(p);
+
             if (pieza.getValorA() == -1) {
+                System.out.println("====================================================================================");
+                System.out.println("No hay solución posible para el tablero actualmente:");
+                imprimirTablero(tablero);
                 termina = true;
-                System.out.println("No hay solución posible");
-                solucion = false;
+                resultado = false;
                 return false;
-                
             }
-            //Agregar pieza al tablero
-            sv.agregarPieza(pieza, p);
-            System.out.println("Pieza agregada: [" + pieza.getValorA() + "," + pieza.getValorB() + "] orientacion: " + pieza.getOrientacion());
-            //Imprimir nuevo tablero
-            sv.imprimirTablero();
-            
-            if(sv.piezas.isEmpty()){
-                termina = true;                
+            if (piezas.isEmpty()) {
+                termina = true;
+                resultado = true;
                 System.out.println("Se encuentra solución posible");
-                solucion = true;
                 return true;
             }
+            //Agregar pieza al tablero
+            agregarPieza(pieza, p);
+            System.out.println("====================================================================================");
+            System.out.println("Pieza agregada: [" + pieza.getValorA() + "," + pieza.getValorB() + "] orientacion: " + pieza.getOrientacion());
+            System.out.println("====================================================================================");
+
         }
-        return solucion;
+        return resultado;
     }
 
-    private boolean validarSubMatriz(Pieza seleccionada, Point p) {
+    private boolean validarSubMatriz(Pieza pieza, Point p) {
+        //System.out.println("-----------------------//--------------------");
+        //System.out.println("Inicia Validar SubMatriz");
         boolean esValida = true;
-        int valorA = seleccionada.getValorA();
-        int valorB = seleccionada.getValorB();
-        //TODO: verificar las submatrices afectadas
-        
+        //Crer tablero ficticio y agregar piezas
+        int[][] tableroFicticio = new int[9][9];
+        byte n = (byte) tablero.length;
+        for (int i = 0; i < n; i++) {
+            System.arraycopy(tablero[i], 0, tableroFicticio[i], 0, n);
+        }
+
+        int i1 = p.x;
+        int j1 = p.y;
+
+        int i2 = 0;
+        int j2 = 0;
+
+        int orientacion = pieza.getOrientacion();
+        switch (orientacion) {
+            case 0:
+            case 180:
+                if (p.y + 1 > 8) {
+                    return false;
+                }
+                tableroFicticio[p.x][p.y] = pieza.getValorA();
+                tableroFicticio[p.x][p.y + 1] = pieza.getValorB();
+                if (tableroFicticio[p.x][p.y + 1] != 0) {
+                    i2 = p.x;
+                    j2 = p.y + 1;
+                }
+                break;
+            case 90:
+            case 270:
+                if (p.x + 1 > 8) {
+                    return false;
+                }
+                tableroFicticio[p.x][p.y] = pieza.getValorA();
+                tableroFicticio[p.x + 1][p.y] = pieza.getValorB();
+                if (tableroFicticio[p.x + 1][p.y] != 0) {
+                    i2 = p.x + 1;
+                    j2 = p.y;
+                }
+                break;
+        }
+
+        //Verificar caja Punto 1 y punto 2
+        //Hallar caja con puntos iniciales
+        //Ubicar inicio caja1
+        if (i1 >= 0 && i1 < 3) {
+            i1 = 0;
+        } else if (i1 >= 3 && i1 < 6) {
+            i1 = 3;
+        } else if (i1 >= 6 && i1 < 10) {
+            i1 = 6;
+        }
+        if (j1 >= 0 && j1 < 3) {
+            j1 = 0;
+        } else if (j1 >= 3 && j1 < 6) {
+            j1 = 3;
+        } else if (j1 >= 6 && j1 < 10) {
+            j1 = 6;
+        }
+
+        //Ubircar inicio caja2
+        if (i2 >= 0 && i2 < 3) {
+            i2 = 0;
+        } else if (i2 >= 3 && i2 < 6) {
+            i2 = 3;
+        } else if (i2 >= 6 && i2 < 10) {
+            i2 = 6;
+        }
+        if (j2 >= 0 && j2 < 3) {
+            j2 = 0;
+        } else if (j2 >= 3 && j2 < 6) {
+            j2 = 3;
+        } else if (j2 >= 6 && j2 < 10) {
+            j2 = 6;
+        }
+
+        //Solo verificar una caja sino verificar las dos cajas
+        if (i1 == i2 && j1 == j2) {
+
+            List<Integer> caja = crearCaja(i1, j1, tableroFicticio);
+            //System.out.println("Caja encontrada" + caja);
+            for (int i = 0; i < caja.size(); i++) {
+                for (int j = i + 1; j < caja.size(); j++) {
+                    if (caja.get(i) == caja.get(j)) {
+                        return false;
+                    }
+                }
+            }
+
+        } else {
+            List caja1 = crearCaja(i1, j1, tableroFicticio);
+            List caja2 = crearCaja(i2, j2, tableroFicticio);
+            //System.out.println("Caja1 encontrada" + caja1);
+            //System.out.println("Caja2 encontrada" + caja2);
+            //Verificar caja 1
+            for (int i = 0; i < caja1.size(); i++) {
+                for (int j = i + 1; j < caja1.size(); j++) {
+                    if (caja1.get(i) == caja1.get(j)) {
+                        return false;
+                    }
+                }
+            }
+            //Verificar caja 2
+            for (int i = 0; i < caja2.size(); i++) {
+                for (int j = i + 1; j < caja2.size(); j++) {
+                    if (caja2.get(i) == caja2.get(j)) {
+                        return false;
+                    }
+                }
+            }
+        }
         return esValida;
     }
-    
+
+    private List<Integer> crearCaja(int i1, int j1, int[][] tableroFicticio) {
+        //System.out.println("Crear caja: [" + i1 + ", " + j1 + "]");
+        List<Integer> caja = new LinkedList();
+        for (int i = i1; i < i1 + 3; i++) {
+            for (int j = j1; j < j1 + 3; j++) {
+                if (tableroFicticio[i][j] != 0) {
+                    caja.add(tableroFicticio[i][j]);
+                }
+            }
+        }
+        return caja;
+    }
+
 }
