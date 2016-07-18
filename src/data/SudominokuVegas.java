@@ -96,25 +96,7 @@ public class SudominokuVegas {
 
     }
 
-    /**
-     * Retorna la posicion de la primera casilla libre del tablero,
-     * recorrido de izq a der y de arriba a abajo
-     *
-     * @return Posicion de la primera casilla libre
-     */
-    public Point buscarPrimeraCasillaLibre() {
-        Point posicionLibre = new Point();
-        boolean encontrado = false;
-        for (int i = 0; i < 9 && (!encontrado); i++) {
-            for (int j = 0; j < 9 && (!encontrado); j++) {
-                if (tablero[i][j] == 0) {
-                    posicionLibre.setLocation(i, j);
-                    encontrado = true;
-                }
-            }
-        }
-        return posicionLibre;
-    }
+    
     
     /**
      * Retorna la posicion de la primera casilla libre al azar
@@ -238,7 +220,7 @@ public class SudominokuVegas {
             if (esValida && (orientacion == 270) && ((posicion.x+1)<9)) {//si esta vertical revisa la fila de abajo para valorB
                 esValida = (tablero[posicion.x + 1][col] != valorB);
             }
-            if (esValida && (orientacion == 90) && ((posicion.x-1)<9)) {//si esta vertical revisa la fila de arriba para valorB
+            if (esValida && (orientacion == 90) && ((posicion.x-1)>=0)) {//si esta vertical revisa la fila de arriba para valorB
                 esValida = (tablero[posicion.x - 1][col] != valorB);
             }
         }
@@ -292,7 +274,7 @@ public class SudominokuVegas {
             if (esValida && (orientacion == 0)  && ((posicion.y + 1) < 9)) {//si esta vertical revisa la columna de la derecha para valorB
                 esValida = (tablero[fila][posicion.y + 1] != valorB);
             }
-            if (esValida &&  (orientacion == 180) && ((posicion.y - 1) < 9)) {//si esta vertical revisa la columna de la izquierda para valorB
+            if (esValida &&  (orientacion == 180) && ((posicion.y - 1) >=0)) {//si esta vertical revisa la columna de la izquierda para valorB
                 esValida = (tablero[fila][posicion.y - 1] != valorB);
             }
         }
@@ -354,7 +336,6 @@ public class SudominokuVegas {
                         System.out.println("Horizontal: Orientación escogida al azar: " + orientacionesDisponibles.get(orientacion));
                         seleccionada.ordenPieza("DSC");
                         break;
-
                 }
                 //Antes de validar fila, columna y subMatriz agregar el elemento a un tablero ficticio
                 boolean validarFila = validarFila(seleccionada, p);
@@ -419,6 +400,44 @@ public class SudominokuVegas {
         }
         return orientacionesDisponibles;
     }
+    
+    /**
+     *
+     * @param p Casilla libre.
+     * @return Lista de orientaciones disponibles
+     */
+    public ArrayList<Integer> cargarOrientaciones2(Point p) {
+        //se verifican los vecinos derecho, abajo, izquierda, derecha de la posicion libre
+        //primero se verifican los limites del tablero 
+        ArrayList<Integer> orientacionesDisponibles = new ArrayList<Integer>();
+        
+        //Verificar 0 grados
+        if(p.y+1<=8){
+            if (tablero[p.x][p.y+1] == 0) {//si se puede poner la pieza horizontalmente en grado 0               
+                orientacionesDisponibles.add(0);   
+            }
+        }
+         //Verificar 180 grados
+        if(p.y-1>=0){
+            if (tablero[p.x][p.y-1] == 0) {//si se puede poner la pieza horizontalmente en grado 0               
+                orientacionesDisponibles.add(180);   
+            }
+        }
+        
+        //Verificar 90 grados
+        if(p.x-1>=0){
+            if (tablero[p.x-1][p.y] == 0) {//si se puede poner la pieza horizontalmente en grado 0               
+                orientacionesDisponibles.add(90);   
+            }
+        }
+         //Verificar 270 grados
+        if(p.x+1<=8){
+            if (tablero[p.x+1][p.y] == 0) {//si se puede poner la pieza horizontalmente en grado 0               
+                orientacionesDisponibles.add(270);   
+            }
+        }
+        return orientacionesDisponibles;
+    }
 
     /**
      * Agregar casilla segun su orientación.
@@ -442,45 +461,143 @@ public class SudominokuVegas {
         }
     }
 
-    
-    public boolean run() {
-        System.out.println("====================================================================================");
-        //sv.imprimirPiezas();        
-        cargarTablero("tablero1");
-
-        boolean resultado = false;
-        boolean termina = false;
-        while (!termina) {
-            System.out.println("Tablero Actual");
-            imprimirTablero(tablero);
-            Point p = buscarPrimeraCasillaLibre();
-            System.out.println("Primera casilla libre: " + p.toString());
-            //Seleccionar pieza, aleatorizarla y eliminarla de la lista
-            Pieza pieza = seleccionarPieza2(p);
-
-            if (pieza.getValorA() == -1) {
-                System.out.println("====================================================================================");
-                System.out.println("No hay solución posible para el tablero actualmente:");
-                imprimirTablero(tablero);
-                termina = true;
-                resultado = false;
-                return false;
-            }
-            if (piezas.isEmpty()) {
-                termina = true;
-                resultado = true;
-                System.out.println("Se encuentra solución posible");
-                return true;
-            }
-            //Agregar pieza al tablero
-            agregarPieza(pieza, p);
-            System.out.println("====================================================================================");
-            System.out.println("Pieza agregada: [" + pieza.getValorA() + "," + pieza.getValorB() + "] orientacion: " + pieza.getOrientacion());
-            System.out.println("====================================================================================");
-
+    private boolean validarSubMatriz2(Pieza pieza, Point p) {
+        //System.out.println("-----------------------//--------------------");
+        //System.out.println("Inicia Validar SubMatriz");
+        boolean esValida = true;
+        //Crer tablero ficticio y agregar piezas
+        int[][] tableroFicticio = new int[9][9];
+        byte n = (byte) tablero.length;
+        for (int i = 0; i < n; i++) {
+            System.arraycopy(tablero[i], 0, tableroFicticio[i], 0, n);
         }
-        return resultado;
+
+        int i1 = p.x;
+        int j1 = p.y;
+
+        int i2 = 0;
+        int j2 = 0;
+
+        int orientacion = pieza.getOrientacion();
+        switch (orientacion) {
+            case 0:
+                if (p.y + 1 >= 9) {
+                    return false;
+                }
+                tableroFicticio[p.x][p.y] = pieza.getValorA();
+                tableroFicticio[p.x][p.y + 1] = pieza.getValorB();
+                if (tableroFicticio[p.x][p.y + 1] != 0) {
+                    i2 = p.x;
+                    j2 = p.y + 1;
+                }
+                break;
+            case 180:
+                if (p.y - 1 < 0) {
+                    return false;
+                }
+                tableroFicticio[p.x][p.y] = pieza.getValorA();
+                tableroFicticio[p.x][p.y - 1] = pieza.getValorB();
+                if (tableroFicticio[p.x][p.y - 1] != 0) {
+                    i2 = p.x;
+                    j2 = p.y - 1;
+                }
+                break;
+            case 90:
+                if (p.x - 1 < 0) {
+                    return false;
+                }
+                tableroFicticio[p.x][p.y] = pieza.getValorA();
+                tableroFicticio[p.x - 1][p.y] = pieza.getValorB();
+                if (tableroFicticio[p.x - 1][p.y] != 0) {
+                    i2 = p.x - 1;
+                    j2 = p.y;
+                }
+                break;
+            case 270:
+                if (p.x + 1 >= 9) {
+                    return false;
+                }
+                tableroFicticio[p.x][p.y] = pieza.getValorA();
+                tableroFicticio[p.x + 1][p.y] = pieza.getValorB();
+                if (tableroFicticio[p.x + 1][p.y] != 0) {
+                    i2 = p.x + 1;
+                    j2 = p.y;
+                }
+                break;
+        }
+
+        //Verificar caja Punto 1 y punto 2
+        //Hallar caja con puntos iniciales
+        //Ubicar inicio caja1
+        if (i1 >= 0 && i1 < 3) {
+            i1 = 0;
+        } else if (i1 >= 3 && i1 < 6) {
+            i1 = 3;
+        } else if (i1 >= 6 && i1 < 10) {
+            i1 = 6;
+        }
+        if (j1 >= 0 && j1 < 3) {
+            j1 = 0;
+        } else if (j1 >= 3 && j1 < 6) {
+            j1 = 3;
+        } else if (j1 >= 6 && j1 < 10) {
+            j1 = 6;
+        }
+
+        //Ubircar inicio caja2
+        if (i2 >= 0 && i2 < 3) {
+            i2 = 0;
+        } else if (i2 >= 3 && i2 < 6) {
+            i2 = 3;
+        } else if (i2 >= 6 && i2 < 10) {
+            i2 = 6;
+        }
+        if (j2 >= 0 && j2 < 3) {
+            j2 = 0;
+        } else if (j2 >= 3 && j2 < 6) {
+            j2 = 3;
+        } else if (j2 >= 6 && j2 < 10) {
+            j2 = 6;
+        }
+
+        //Solo verificar una caja sino verificar las dos cajas
+        if (i1 == i2 && j1 == j2) {
+
+            List<Integer> caja = crearCaja(i1, j1, tableroFicticio);
+            //System.out.println("Caja encontrada" + caja);
+            for (int i = 0; i < caja.size(); i++) {
+                for (int j = i + 1; j < caja.size(); j++) {
+                    if (caja.get(i) == caja.get(j)) {
+                        return false;
+                    }
+                }
+            }
+
+        } else {
+            List caja1 = crearCaja(i1, j1, tableroFicticio);
+            List caja2 = crearCaja(i2, j2, tableroFicticio);
+            //System.out.println("Caja1 encontrada" + caja1);
+            //System.out.println("Caja2 encontrada" + caja2);
+            //Verificar caja 1
+            for (int i = 0; i < caja1.size(); i++) {
+                for (int j = i + 1; j < caja1.size(); j++) {
+                    if (caja1.get(i) == caja1.get(j)) {
+                        return false;
+                    }
+                }
+            }
+            //Verificar caja 2
+            for (int i = 0; i < caja2.size(); i++) {
+                for (int j = i + 1; j < caja2.size(); j++) {
+                    if (caja2.get(i) == caja2.get(j)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return esValida;
     }
+    
 
     private boolean validarSubMatriz(Pieza pieza, Point p) {
         //System.out.println("-----------------------//--------------------");
@@ -610,6 +727,65 @@ public class SudominokuVegas {
             }
         }
         return caja;
+    }
+    
+    /**
+     * Retorna la posicion de la primera casilla libre del tablero,
+     * recorrido de izq a der y de arriba a abajo
+     *
+     * @return Posicion de la primera casilla libre
+     */
+    public Point buscarPrimeraCasillaLibre() {
+        Point posicionLibre = new Point();
+        boolean encontrado = false;
+        for (int i = 0; i < 9 && (!encontrado); i++) {
+            for (int j = 0; j < 9 && (!encontrado); j++) {
+                if (tablero[i][j] == 0) {
+                    posicionLibre.setLocation(i, j);
+                    encontrado = true;
+                }
+            }
+        }
+        return posicionLibre;
+    }
+    
+    public boolean run() {
+        System.out.println("====================================================================================");
+        //sv.imprimirPiezas();        
+        cargarTablero("tablero1");
+
+        boolean resultado = false;
+        boolean termina = false;
+        while (!termina) {
+            System.out.println("Tablero Actual");
+            imprimirTablero(tablero);
+            Point p = buscarPrimeraCasillaLibre();
+            System.out.println("Primera casilla libre: " + p.toString());
+            //Seleccionar pieza, aleatorizarla y eliminarla de la lista
+            Pieza pieza = seleccionarPieza2(p);
+
+            if (pieza.getValorA() == -1) {
+                System.out.println("====================================================================================");
+                System.out.println("No hay solución posible para el tablero actualmente:");
+                imprimirTablero(tablero);
+                termina = true;
+                resultado = false;
+                return false;
+            }
+            if (piezas.isEmpty()) {
+                termina = true;
+                resultado = true;
+                System.out.println("Se encuentra solución posible");
+                return true;
+            }
+            //Agregar pieza al tablero
+            agregarPieza(pieza, p);
+            System.out.println("====================================================================================");
+            System.out.println("Pieza agregada: [" + pieza.getValorA() + "," + pieza.getValorB() + "] orientacion: " + pieza.getOrientacion());
+            System.out.println("====================================================================================");
+
+        }
+        return resultado;
     }
 
     public static void main(String args[]) {
