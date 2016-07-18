@@ -115,7 +115,23 @@ public class SudominokuVegas {
         }
         return posicionLibre;
     }
-
+    
+    /**
+     * Retorna la posicion de la primera casilla libre al azar
+     * @return Posicion de la primera casilla libre
+     */
+    public Point buscarPrimeraCasillaLibre2(){
+        Point posicionLibre = new Point();
+        boolean encontrado = false;
+        int idx_i,idx_j;
+        do{
+            idx_i = prng.nextInt(9);
+            idx_j = prng.nextInt(9);
+        }
+        while(tablero[idx_i][idx_j]!=0);
+        posicionLibre.setLocation(idx_i, idx_j);
+        return posicionLibre;
+    }
     /**
      * devuelve una pieza aleatorizada(el elemento aleatorio es la
      * orientación) para verificarla luego
@@ -200,6 +216,35 @@ public class SudominokuVegas {
         return esValida;
 
     }
+    
+    /**
+     * Verifica que una pieza en una posicion dada, no irrumpa las reglas
+     * para filas
+     *
+     * @param pieza pieza a verificar
+     * @param posicion posicion pivote
+     * @return True si cumple con las reglas para filas
+     */
+    public boolean validarFila2(Pieza pieza, Point posicion) {
+        boolean esValida = true;
+        int orientacion = pieza.getOrientacion();
+        int valorA = pieza.getValorA();
+        int valorB = pieza.getValorB();
+        for (int col = 0; (col < 9) && esValida; col++) {//si la pieza irrumpe con alguna regla para filas sale del ciclo sin revisar mas
+            esValida = (tablero[posicion.x][col] != valorA);//revisa toda la fila para valorA
+            if (esValida && ((orientacion == 0) || (orientacion == 180))) {//si esta horizontal revisa tambien la fila para valorB
+                esValida = (tablero[posicion.x][col] != valorB);
+            }
+            if (esValida && (orientacion == 270) && ((posicion.x+1)<9)) {//si esta vertical revisa la fila de abajo para valorB
+                esValida = (tablero[posicion.x + 1][col] != valorB);
+            }
+            if (esValida && (orientacion == 90) && ((posicion.x-1)<9)) {//si esta vertical revisa la fila de arriba para valorB
+                esValida = (tablero[posicion.x - 1][col] != valorB);
+            }
+        }
+        return esValida;
+
+    }
 
     /**
      * Verifica que una pieza en una posicion dada, no irrumpa las reglas
@@ -221,6 +266,34 @@ public class SudominokuVegas {
             }
             if (esValida && ((orientacion == 0) || (orientacion == 180))) {//si esta vertical revisa la fila de abajo para valorB
                 esValida = (tablero[fila][posicion.y + 1] != valorB);
+            }
+        }
+        return esValida;
+    }
+    
+    /**
+     * Verifica que una pieza en una posicion dada, no irrumpa las reglas
+     * para columnas
+     *
+     * @param pieza pieza a verificar
+     * @param posicion posicion pivote
+     * @return True si cumple con las reglas para filas
+     */
+    public boolean validarCol2(Pieza pieza, Point posicion) {
+        boolean esValida = true;
+        int orientacion = pieza.getOrientacion();
+        int valorA = pieza.getValorA();
+        int valorB = pieza.getValorB();
+        for (int fila = 0; (fila < 9) && esValida; fila++) {//si la pieza irrumpe con alguna regla para filas sale del ciclo sin revisar mas
+            esValida = (tablero[fila][posicion.y] != valorA);//revisa toda la columna para valorA
+            if (esValida && ((orientacion == 90) || (orientacion == 270))) {//si esta horizontal revisa tambien la fila para valorB
+                esValida = (tablero[fila][posicion.y] != valorB);
+            }
+            if (esValida && (orientacion == 0)  && ((posicion.y + 1) < 9)) {//si esta vertical revisa la columna de la derecha para valorB
+                esValida = (tablero[fila][posicion.y + 1] != valorB);
+            }
+            if (esValida &&  (orientacion == 180) && ((posicion.y - 1) < 9)) {//si esta vertical revisa la columna de la izquierda para valorB
+                esValida = (tablero[fila][posicion.y - 1] != valorB);
             }
         }
         return esValida;
@@ -369,25 +442,7 @@ public class SudominokuVegas {
         }
     }
 
-    public static void main(String args[]) {
-        try {
-            int b = 0;
-            int m = 0;
-            for (int j = 0; j < 1; j++) {
-                SudominokuVegas sv = new SudominokuVegas();
-                if (sv.run() == false) {
-                    m++;
-                } else {
-                    b++;
-                }
-            }
-            System.out.println("Ejecuciones Exitosas: "+b);
-            System.out.println("Ejecuciones Fracasadas: "+m);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
+    
     public boolean run() {
         System.out.println("====================================================================================");
         //sv.imprimirPiezas();        
@@ -557,4 +612,22 @@ public class SudominokuVegas {
         return caja;
     }
 
+    public static void main(String args[]) {
+        try {
+            int b = 0;
+            int m = 0;
+            for (int j = 0; j < 1000; j++) {
+                SudominokuVegas sv = new SudominokuVegas();
+                if (sv.run() == false) {
+                    m++;
+                } else {
+                    b++;
+                }
+            }
+            System.out.println("Ejecuciones Exitosas: "+b);
+            System.out.println("Ejecuciones Fracasadas: "+m);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
