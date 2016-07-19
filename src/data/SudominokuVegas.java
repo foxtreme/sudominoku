@@ -22,8 +22,8 @@ import java.util.logging.Logger;
  *
  * Pieza [3,6]
  *
- * 0° = derecha [3,6] 90° = arriba [3,6] 180° = izquierda [6,3] 270° =
- * abajo [6,3]
+ * 0° = derecha [3,6] 90° = arriba [3,6] 180° = izquierda [6,3] 270° = abajo
+ * [6,3]
  *
  *
  * 0° = [m-M] -------------- [m] 90° = [M] --------------- 180° = [M-m]
@@ -107,8 +107,8 @@ public class SudominokuVegas {
     }
 
     /**
-     * Retorna la posicion de la primera casilla libre del tablero,
-     * recorrido de izq a der y de arriba a abajo
+     * Retorna la posicion de la primera casilla libre del tablero, recorrido de
+     * izq a der y de arriba a abajo
      *
      * @return Posicion de la primera casilla libre
      */
@@ -144,8 +144,8 @@ public class SudominokuVegas {
     }
 
     /**
-     * Verifica que una pieza en una posicion dada, no irrumpa las reglas
-     * para filas
+     * Verifica que una pieza en una posicion dada, no irrumpa las reglas para
+     * filas
      *
      * @param pieza pieza a verificar
      * @param posicion posicion pivote
@@ -170,8 +170,8 @@ public class SudominokuVegas {
     }
 
     /**
-     * Verifica que una pieza en una posicion dada, no irrumpa las reglas
-     * para filas
+     * Verifica que una pieza en una posicion dada, no irrumpa las reglas para
+     * filas
      *
      * @param pieza pieza a verificar
      * @param posicion posicion pivote
@@ -199,8 +199,8 @@ public class SudominokuVegas {
     }
 
     /**
-     * Verifica que una pieza en una posicion dada, no irrumpa las reglas
-     * para columnas
+     * Verifica que una pieza en una posicion dada, no irrumpa las reglas para
+     * columnas
      *
      * @param pieza pieza a verificar
      * @param posicion posicion pivote
@@ -224,8 +224,8 @@ public class SudominokuVegas {
     }
 
     /**
-     * Verifica que una pieza en una posicion dada, no irrumpa las reglas
-     * para columnas
+     * Verifica que una pieza en una posicion dada, no irrumpa las reglas para
+     * columnas
      *
      * @param pieza pieza a verificar
      * @param posicion posicion pivote
@@ -258,7 +258,7 @@ public class SudominokuVegas {
      * @return Pieza valida seleccionada con aleatorización de pizas y
      * orientación
      */
-    private Pieza seleccionarPieza(Point p) {
+    private Pieza seleccionarPieza(Point p, boolean metodo1) {
         System.out.println("====================================================================================");
         Pieza seleccionada = new Pieza();
         ArrayList<Pieza> piezasTemporal = new ArrayList<>(piezas);
@@ -307,13 +307,25 @@ public class SudominokuVegas {
                         seleccionada.ordenPieza("DSC");
                         break;
                 }
-                //Antes de validar fila, columna y subMatriz agregar el elemento a un tablero ficticio
-                boolean validarFila = validarFila(seleccionada, p);
-                System.out.println("Validar Fila: " + validarFila);
-                boolean validarCol = validarCol(seleccionada, p);
-                System.out.println("Validar Columna: " + validarCol);
-                boolean validarSubMatriz = validarSubMatriz(seleccionada, p);
-                System.out.println("Validar Submatriz: " + validarSubMatriz);
+                boolean validarFila, validarCol, validarSubMatriz;
+                if (metodo1) {
+                    //Antes de validar fila, columna y subMatriz agregar el elemento a un tablero ficticio
+                    validarFila = validarFila(seleccionada, p);
+                    System.out.println("Validar Fila: " + validarFila);
+                    validarCol = validarCol(seleccionada, p);
+                    System.out.println("Validar Columna: " + validarCol);
+                    validarSubMatriz = validarSubMatriz(seleccionada, p);
+                    System.out.println("Validar Submatriz: " + validarSubMatriz);
+                } else {
+                    //Antes de validar fila, columna y subMatriz agregar el elemento a un tablero ficticio
+                    validarFila = validarFila2(seleccionada, p);
+                    System.out.println("Validar Fila: " + validarFila);
+                    validarCol = validarCol2(seleccionada, p);
+                    System.out.println("Validar Columna: " + validarCol);
+                    validarSubMatriz = validarSubMatriz2(seleccionada, p);
+                    System.out.println("Validar Submatriz: " + validarSubMatriz);
+                }
+
                 //Ficha valida
                 if (validarCol && validarFila && validarSubMatriz) {
                     piezaValida = true;
@@ -745,7 +757,7 @@ public class SudominokuVegas {
         return caja;
     }
 
-    public boolean run() {
+    public boolean run(boolean metodo1) {
         piezasUsadas = 0;
         System.out.println("====================================================================================");
         //sv.imprimirPiezas();        
@@ -756,10 +768,16 @@ public class SudominokuVegas {
         while (!termina) {
             System.out.println("Tablero Actual");
             imprimirTablero(tablero);
-            Point p = buscarPrimeraCasillaLibre();
+            Point p;
+            if (metodo1) {
+                p = buscarPrimeraCasillaLibre();
+            } else {
+                p = buscarPrimeraCasillaLibre2();
+            }
+
             System.out.println("Primera casilla libre: " + p.toString());
             //Seleccionar pieza, aleatorizarla y eliminarla de la lista
-            Pieza pieza = seleccionarPieza(p);
+            Pieza pieza = seleccionarPieza(p, metodo1);
 
             if (pieza.getValorA() == -1) {
                 System.out.println("====================================================================================");
@@ -777,7 +795,12 @@ public class SudominokuVegas {
                 return true;
             }
             //Agregar pieza al tablero
-            agregarPieza(pieza, p);
+            if(metodo1){
+                agregarPieza(pieza, p);
+            }else{
+                agregarPieza2(pieza, p);
+            }
+            
             System.out.println("====================================================================================");
             System.out.println("Pieza agregada: [" + pieza.getValorA() + "," + pieza.getValorB() + "] orientacion: " + pieza.getOrientacion());
             System.out.println("====================================================================================");
@@ -791,9 +814,9 @@ public class SudominokuVegas {
             int b = 0;
             int m = 0;
             ArrayList arrayPiezasUsadas = new ArrayList();
-            for (int j = 0; j < 1000; j++) {
-                SudominokuVegas sv = new SudominokuVegas();                
-                if (sv.run() == false) {
+            for (int j = 0; j < 10000; j++) {
+                SudominokuVegas sv = new SudominokuVegas();
+                if (sv.run(false) == false) {
                     m++;
                 } else {
                     b++;
@@ -805,7 +828,7 @@ public class SudominokuVegas {
             System.out.println("Piezas Usadas " + arrayPiezasUsadas);
             System.out.println("Maximas piezas usadas " + Collections.max(arrayPiezasUsadas));
             System.out.println("Minimas piezas usadas " + Collections.min(arrayPiezasUsadas));
-            
+
         } catch (Exception e) {
             e.printStackTrace();
         }
