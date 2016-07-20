@@ -814,20 +814,26 @@ public class SudominokuVegas {
             int b = 0;
             int m = 0;
             ArrayList arrayPiezasUsadas = new ArrayList();
-            for (int j = 0; j < 10000; j++) {
+            for (int j = 0; j < 5000; j++) {
                 SudominokuVegas sv = new SudominokuVegas();
-                if (sv.run(false) == false) {
+                //true corresponde al metodo1
+                //false corresponde al metodo 2
+                if (sv.run(true) == false) {
                     m++;
                 } else {
                     b++;
                 }
                 arrayPiezasUsadas.add(sv.piezasUsadas);
             }
+            double promedioUsadas = 0;
             System.out.println("Ejecuciones Exitosas: " + b);
             System.out.println("Ejecuciones Fracasadas: " + m);
-            System.out.println("Piezas Usadas " + arrayPiezasUsadas);
             System.out.println("Maximas piezas usadas " + Collections.max(arrayPiezasUsadas));
             System.out.println("Minimas piezas usadas " + Collections.min(arrayPiezasUsadas));
+            for(int i = 0;i<arrayPiezasUsadas.size();i++){
+                promedioUsadas += Long.valueOf(arrayPiezasUsadas.get(i).toString());
+            }
+            System.out.println("Promedio piezas usadas " + promedioUsadas/arrayPiezasUsadas.size());
 
         } catch (Exception e) {
             e.printStackTrace();
